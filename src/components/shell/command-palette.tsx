@@ -5,9 +5,11 @@ import { useState, useEffect, useRef, useCallback } from "react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import {
+  Command,
   CommandEmpty,
   CommandGroup,
   CommandInput,
+  CommandItem as CommandItemComponent,
   CommandList,
   CommandSeparator,
   CommandShortcut,
@@ -43,14 +45,18 @@ interface CommandItem {
   type: "navigation" | "action";
 }
 
+interface ScoredCommand extends CommandItem {
+  score: number;
+}
+
 const navigationCommands: CommandItem[] = [
-  { name: "Dashboard", href: "/dashboard", icon: LayoutDashboard, description: "Overview of your projects" },
-  { name: "Secrets Vault", href: "/dashboard/secrets", icon: Key, description: "Manage secrets across environments" },
-  { name: "Environment Diff", href: "/dashboard/diff", icon: GitCompare, description: "Compare and sync environments" },
-  { name: "AI Agent Harness", href: "/dashboard/agents", icon: Bot, description: "Manage and monitor AI agents" },
-  { name: "Team & RBAC", href: "/dashboard/team", icon: Users, description: "Manage team members and roles" },
-  { name: "Activity Audit", href: "/dashboard/activity", icon: Activity, description: "View audit logs and activity" },
-  { name: "Settings & KMS", href: "/dashboard/settings", icon: Settings, description: "Configure project settings" },
+  { name: "Dashboard", href: "/dashboard", icon: LayoutDashboard, description: "Overview of your projects", type: "navigation" },
+  { name: "Secrets Vault", href: "/dashboard/secrets", icon: Key, description: "Manage secrets across environments", type: "navigation" },
+  { name: "Environment Diff", href: "/dashboard/diff", icon: GitCompare, description: "Compare and sync environments", type: "navigation" },
+  { name: "AI Agent Harness", href: "/dashboard/agents", icon: Bot, description: "Manage and monitor AI agents", type: "navigation" },
+  { name: "Team & RBAC", href: "/dashboard/team", icon: Users, description: "Manage team members and roles", type: "navigation" },
+  { name: "Activity Audit", href: "/dashboard/activity", icon: Activity, description: "View audit logs and activity", type: "navigation" },
+  { name: "Settings & KMS", href: "/dashboard/settings", icon: Settings, description: "Configure project settings", type: "navigation" },
 ];
 
 const actionCommands: CommandItem[] = [
@@ -68,18 +74,18 @@ function CommandPaletteContent({ onClose }: { onClose: () => void }) {
   const searchParams = useSearchParams();
   const [query, setQuery] = useState("");
   const [selectedIndex, setSelectedIndex] = useState(0);
-  const [filteredCommands, setFilteredCommands] = useState<CommandItem[]>([]);
+  const [filteredCommands, setFilteredCommands] = useState<ScoredCommand[]>([]);
 
   // Combine all commands
   const allCommands = [
-    ...navigationCommands.map((cmd) => ({ ...cmd, type: "navigation" as const })),
-    ...actionCommands.map((cmd) => ({ ...cmd, type: "action" as const })),
+    ...navigationCommands,
+    ...actionCommands,
   ];
 
   // Filter commands based on query
   useEffect(() => {
     if (!query) {
-      setFilteredCommands(allCommands);
+      setFilteredCommands(allCommands.map(cmd => ({ ...cmd, score: 100 })));
       return;
     }
 
@@ -102,9 +108,9 @@ function CommandPaletteContent({ onClose }: { onClose: () => void }) {
     setSelectedIndex(0);
   }, [query]);
 
-  const handleSelect = useCallback((command: CommandItem) => {
+  const handleSelect = useCallback((command: ScoredCommand) => {
     if (command.type === "navigation") {
-      router.push(command.href);
+      router.push(command.href!);
       onClose();
     } else if (command.type === "action") {
       // Handle actions - could open dialogs, etc.
@@ -145,7 +151,7 @@ function CommandPaletteContent({ onClose }: { onClose: () => void }) {
           {filteredCommands
             .filter((cmd) => cmd.type === "navigation")
             .map((cmd, index) => (
-              <CommandItem
+              <CommandItemComponent
                 key={cmd.name}
                 onSelect={() => handleSelect(cmd)}
                 className={cn(
@@ -159,7 +165,7 @@ function CommandPaletteContent({ onClose }: { onClose: () => void }) {
                   <div className="text-xs text-muted-foreground">{cmd.description}</div>
                 </div>
                 <ChevronRight className="h-4 w-4 text-muted-foreground" />
-              </CommandItem>
+              </CommandItemComponent>
             ))}
         </CommandGroup>
         <CommandSeparator />
@@ -167,7 +173,7 @@ function CommandPaletteContent({ onClose }: { onClose: () => void }) {
           {filteredCommands
             .filter((cmd) => cmd.type === "action")
             .map((cmd, index) => (
-              <CommandItem
+              <CommandItemComponent
                 key={cmd.name}
                 onSelect={() => handleSelect(cmd)}
                 className={cn(
@@ -181,7 +187,7 @@ function CommandPaletteContent({ onClose }: { onClose: () => void }) {
                   <div className="text-xs text-muted-foreground">{cmd.description}</div>
                 </div>
                 {cmd.shortcut && <CommandShortcut>{cmd.shortcut}</CommandShortcut>}
-              </CommandItem>
+              </CommandItemComponent>
             ))}
         </CommandGroup>
       </CommandList>
@@ -235,6 +241,3 @@ export function CommandPaletteTrigger() {
     </>
   );
 }
-
-// Need to import LayoutDashboard from lucide-react
-import { LayoutDashboard } from "lucide-react";

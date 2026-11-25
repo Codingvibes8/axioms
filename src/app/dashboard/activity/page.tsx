@@ -8,7 +8,7 @@ import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
-import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
+import { Tooltip, TooltipContent, TooltipTrigger, TooltipProvider } from "@/components/ui/tooltip";
 import { Separator } from "@/components/ui/separator";
 import { Label } from "@/components/ui/label";
 import {
@@ -186,7 +186,8 @@ export default function ActivityPage() {
   };
 
   return (
-    <div className="space-y-6">
+    <TooltipProvider>
+      <div className="space-y-6">
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
@@ -203,7 +204,7 @@ export default function ActivityPage() {
             <Download className="h-4 w-4 mr-2" />
             Export {exportFormat.toUpperCase()}
           </Button>
-          <Select value={exportFormat} onValueChange={setExportFormat}>
+          <Select value={exportFormat} onValueChange={(v: "json" | "csv") => setExportFormat(v)}>
             <SelectTrigger className="w-[140px]">
               <SelectValue />
             </SelectTrigger>
@@ -376,5 +377,6 @@ export default function ActivityPage() {
         </CardContent>
       </Card>
     </div>
+    </TooltipProvider>
   );
 }

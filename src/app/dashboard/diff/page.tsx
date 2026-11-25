@@ -84,7 +84,7 @@ export default function DiffPage() {
   };
 
   const getStatusBadge = (status: string) => {
-    const variantMap: Record<string, string> = {
+    const variantMap: Record<string, "green" | "yellow" | "red" | "zinc"> = {
       synced: "green",
       mismatch: "yellow",
       missing_source: "red",

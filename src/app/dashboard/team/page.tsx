@@ -82,7 +82,7 @@ export default function TeamPage() {
   };
 
   const getRoleBadge = (role: string) => {
-    const variantMap: Record<string, string> = {
+    const variantMap: Record<string, "purple" | "blue" | "green" | "zinc" | "orange"> = {
       owner: "purple",
       admin: "blue",
       developer: "green",
